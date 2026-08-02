@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
-import Image from "next/image"
 import Link from "next/link"
 
 import { HomeBannerCarousel } from "@/components/public/home-banner-carousel"
+import { NewsCard } from "@/components/public/news-card"
+import { createClient } from "@/lib/supabase/server"
 
 export const metadata: Metadata = {
   title: "Inicio",
@@ -10,43 +11,34 @@ export const metadata: Metadata = {
     "MINIXFM Fundación, radio comunitaria online de la Región de Coquimbo.",
 }
 
-const newsItems = [
-  {
-    title: "MINIXFM fortalece su plataforma de comunicación comunitaria",
-    excerpt:
-      "La Fundación avanza en la creación de nuevos espacios digitales para acercar sus contenidos a toda la comunidad.",
-    day: "02",
-    month: "AGO",
-    category: "Institucional",
-    href: "/noticias",
-    background:
-      "bg-gradient-to-br from-[#003f42] via-[#17666a] to-[#41a48f]",
-  },
-  {
-    title: "Nuevos talleres culturales y comunitarios",
-    excerpt:
-      "Próximamente se publicarán actividades de formación, creación y participación abiertas a la comunidad.",
-    day: "28",
-    month: "JUL",
-    category: "Talleres",
-    href: "/talleres",
-    background:
-      "bg-gradient-to-br from-[#f97316] via-[#e55d17] to-[#7d4731]",
-  },
-  {
-    title: "Programación y contenidos desde el territorio",
-    excerpt:
-      "La señal de MINIXFM reunirá música, entrevistas y contenidos vinculados con la identidad regional.",
-    day: "21",
-    month: "JUL",
-    category: "Programación",
-    href: "/programacion",
-    background:
-      "bg-gradient-to-br from-[#7657e8] via-[#347fc4] to-[#00aaa9]",
-  },
-]
+export const dynamic = "force-dynamic"
 
-export default function HomePage() {
+type Noticia = {
+  id: string
+  titulo: string
+  slug: string
+  bajada: string
+  categoria: string
+  imagen_principal: string | null
+  fecha_publicacion: string | null
+}
+
+export default async function HomePage() {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from("noticias")
+    .select(
+      "id, titulo, slug, bajada, categoria, imagen_principal, fecha_publicacion"
+    )
+    .eq("estado", "publicada")
+    .order("fecha_publicacion", {
+      ascending: false,
+    })
+    .limit(3)
+
+  const noticias = (data ?? []) as Noticia[]
+
   return (
     <main>
       <section className="px-4 py-5 sm:px-6 sm:py-7">
@@ -75,66 +67,38 @@ export default function HomePage() {
 
             <Link
               href="/noticias"
-              className="font-bold text-[#17666a] transition hover:text-[#f97316]"
+              className="font-bold text-[#17666a] hover:text-[#f97316]"
             >
               Ver todas las noticias →
             </Link>
           </div>
 
-          <div className="mt-10 grid gap-7 md:grid-cols-2 xl:grid-cols-3">
-            {newsItems.map((news) => (
-              <article
-                key={news.title}
-                className="group overflow-hidden rounded-2xl border border-[#d5dddd] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
-              >
-                <div
-                  className={`relative flex h-64 items-center justify-center overflow-hidden ${news.background}`}
-                >
-                  <Image
-                    src="/logos/minixfm-logo-white.png"
-                    alt=""
-                    width={190}
-                    height={190}
-                    className="h-40 w-40 object-contain opacity-90 transition duration-500 group-hover:scale-105"
-                  />
+          {noticias.length > 0 ? (
+            <div className="mt-10 grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+              {noticias.map((noticia) => (
+                <NewsCard
+                  key={noticia.id}
+                  title={noticia.titulo}
+                  excerpt={noticia.bajada}
+                  category={noticia.categoria}
+                  slug={noticia.slug}
+                  imageUrl={noticia.imagen_principal}
+                  publishedAt={noticia.fecha_publicacion}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-10 rounded-2xl border border-[#d5dddd] bg-white px-6 py-12 text-center">
+              <h3 className="text-2xl font-bold text-[#173f42]">
+                Próximamente
+              </h3>
 
-                  <span className="absolute left-5 top-5 rounded-full bg-white px-4 py-2 text-xs font-bold text-[#173f42] shadow">
-                    {news.category}
-                  </span>
-
-                  <div className="absolute right-5 top-5 flex h-16 w-16 flex-col items-center justify-center rounded-full bg-[#f97316] text-white shadow-lg">
-                    <span className="text-xl font-bold leading-none">
-                      {news.day}
-                    </span>
-
-                    <span className="mt-1 text-xs font-bold">
-                      {news.month}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold leading-tight text-[#173f42]">
-                    {news.title}
-                  </h3>
-
-                  <p className="mt-4 text-base leading-7 text-[#34494b]">
-                    {news.excerpt}
-                  </p>
-
-                  <Link
-                    href={news.href}
-                    className="mt-6 inline-flex font-bold text-[#17666a] transition group-hover:text-[#f97316]"
-                  >
-                    Leer más
-                    <span aria-hidden="true" className="ml-2">
-                      →
-                    </span>
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
+              <p className="mt-3 text-[#405557]">
+                Las noticias publicadas desde el panel aparecerán en este
+                espacio.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
