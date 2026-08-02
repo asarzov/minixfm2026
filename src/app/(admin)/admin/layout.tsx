@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { logout } from "./actions"
 
 export default async function AdminLayout({
   children,
@@ -28,12 +29,23 @@ export default async function AdminLayout({
             </h1>
           </div>
 
-          <Link
-            href="/"
-            className="text-sm text-neutral-600 hover:text-neutral-950"
-          >
-            Ver sitio público
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="text-sm text-neutral-600 hover:text-neutral-950"
+            >
+              Ver sitio público
+            </Link>
+
+            <form action={logout}>
+              <button
+                type="submit"
+                className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+              >
+                Cerrar sesión
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 
