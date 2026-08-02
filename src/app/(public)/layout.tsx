@@ -16,6 +16,7 @@ export default function PublicLayout({
 
           <nav className="flex gap-5 text-sm text-neutral-300">
             <Link href="/">Inicio</Link>
+            <Link href="/nosotros">Nosotros</Link>
             <Link href="/noticias">Noticias</Link>
             <Link href="/programacion">Programación</Link>
             <Link href="/talleres">Talleres</Link>
