@@ -3,14 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-neutral-950 px-6 py-16 text-white">
+    <main className="px-6 py-16">
       <div className="mx-auto max-w-5xl">
         <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-orange-400">
-          Radio comunitaria online
+          Radio comunitaria online de Diaguitas
         </p>
 
         <h1 className="text-5xl font-bold tracking-tight">
-          MINIXFM
+          MINIX FM
         </h1>
 
         <p className="mt-5 max-w-2xl text-lg text-neutral-300">
