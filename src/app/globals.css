@@ -153,3 +153,21 @@ select {
   background-color: #f97316;
   color: #ffffff;
 }
+
+:root {
+  --minix-heading: #173f42;
+  --minix-body: #34494b;
+  --minix-secondary: #405557;
+  --minix-muted: #526466;
+  --minix-border: #d5dddd;
+  --minix-background: #f5f6f7;
+  --minix-card: #ffffff;
+  --minix-primary: #17666a;
+  --minix-primary-dark: #003f42;
+  --minix-accent: #f97316;
+}
+
+body {
+  background-color: var(--minix-background);
+  color: var(--minix-body);
+}

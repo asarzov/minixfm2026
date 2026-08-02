@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -20,10 +21,6 @@ const navigationItems = [
     label: "Inicio",
   },
   {
-    href: "/nosotros",
-    label: "Nosotros",
-  },
-  {
     href: "/noticias",
     label: "Noticias",
   },
@@ -34,6 +31,10 @@ const navigationItems = [
   {
     href: "/talleres",
     label: "Talleres",
+  },
+  {
+    href: "/nosotros",
+    label: "Nosotros",
   },
   {
     href: "/contacto",
@@ -64,7 +65,7 @@ export function MobileNavigation() {
           type="button"
           variant="outline"
           size="icon"
-          className="border-white/15 bg-transparent text-white hover:bg-white/10 hover:text-white md:hidden"
+          className="border-[#b9c8c9] bg-transparent text-[#124d50] hover:bg-[#e5eeee] hover:text-[#124d50] md:hidden"
           aria-label="Abrir menú principal"
         >
           <span aria-hidden="true" className="text-xl leading-none">
@@ -75,16 +76,28 @@ export function MobileNavigation() {
 
       <SheetContent
         side="right"
-        className="border-white/10 bg-neutral-950 text-white"
+        className="border-[#d5dddd] bg-[#f7f7f5] text-[#123f42]"
       >
         <SheetHeader className="text-left">
-          <SheetTitle className="text-white">
-            MINIXFM
-          </SheetTitle>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/logos/minixfm-logo-color.png"
+              alt=""
+              width={52}
+              height={52}
+              className="h-12 w-12 object-contain"
+            />
 
-          <SheetDescription className="text-neutral-400">
-            Radio Comunitaria Online
-          </SheetDescription>
+            <div>
+              <SheetTitle className="text-[#123f42]">
+                MINIXFM Fundación
+              </SheetTitle>
+
+              <SheetDescription className="text-neutral-500">
+                Radio Comunitaria Online
+              </SheetDescription>
+            </div>
+          </div>
         </SheetHeader>
 
         <nav
@@ -95,10 +108,10 @@ export function MobileNavigation() {
             <Link
               key={item.href}
               href={item.href}
-              className={`rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+              className={`rounded-xl px-4 py-3 text-base font-semibold transition-colors ${
                 isActive(item.href)
-                  ? "bg-orange-500 text-white"
-                  : "text-neutral-300 hover:bg-white/10 hover:text-white"
+                  ? "bg-[#17666a] text-white"
+                  : "text-neutral-700 hover:bg-[#e3eeee] hover:text-[#124d50]"
               }`}
             >
               {item.label}
@@ -106,8 +119,8 @@ export function MobileNavigation() {
           ))}
         </nav>
 
-        <div className="mt-10 border-t border-white/10 pt-6">
-          <p className="text-sm leading-6 text-neutral-400">
+        <div className="mt-10 border-t border-[#d5dddd] pt-6">
+          <p className="text-sm leading-6 text-neutral-500">
             Cultura, comunicación y participación comunitaria.
           </p>
         </div>

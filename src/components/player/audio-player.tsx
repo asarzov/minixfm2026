@@ -71,7 +71,7 @@ export function AudioPlayer() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-neutral-950/95 text-white shadow-2xl backdrop-blur">
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-[#003f42] text-white shadow-2xl">
       <audio
         ref={audioRef}
         src={streamUrl || undefined}
@@ -94,7 +94,37 @@ export function AudioPlayer() {
         }}
       />
 
-      <div className="mx-auto flex min-h-20 max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
+      <div className="mx-auto flex min-h-20 max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
+        <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white/10 sm:flex">
+          <span className="text-xl" aria-hidden="true">
+            🎙
+          </span>
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${
+                isPlaying
+                  ? "animate-pulse bg-[#f97316]"
+                  : "bg-white/30"
+              }`}
+            />
+
+            <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-white/80">
+              En vivo ahora
+            </p>
+          </div>
+
+          <p className="mt-1 truncate font-semibold">
+            MINIXFM Fundación
+          </p>
+
+          <p className="truncate text-xs text-white/60">
+            {getStatusText()}
+          </p>
+        </div>
+
         <button
           type="button"
           onClick={togglePlayback}
@@ -104,34 +134,14 @@ export function AudioPlayer() {
               ? "Pausar señal de MINIXFM"
               : "Reproducir señal de MINIXFM"
           }
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-500 text-lg font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-xl font-bold text-[#003f42] transition hover:bg-[#f2f2f2] disabled:cursor-not-allowed disabled:opacity-50 sm:h-14 sm:w-14"
         >
           {isPlaying ? "Ⅱ" : "▶"}
         </button>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span
-              className={`h-2.5 w-2.5 rounded-full ${
-                isPlaying
-                  ? "animate-pulse bg-red-500"
-                  : "bg-neutral-600"
-              }`}
-            />
-
-            <p className="truncate text-sm font-semibold">
-              MINIXFM en vivo
-            </p>
-          </div>
-
-          <p className="mt-1 truncate text-xs text-neutral-400">
-            {getStatusText()}
-          </p>
-        </div>
-
-        <div className="hidden items-center gap-3 sm:flex">
-          <span className="text-xs text-neutral-400">
-            Volumen
+        <div className="hidden flex-1 items-center justify-end gap-3 md:flex">
+          <span aria-hidden="true" className="text-lg">
+            🔊
           </span>
 
           <input
@@ -142,7 +152,7 @@ export function AudioPlayer() {
             value={volume}
             onChange={handleVolumeChange}
             aria-label="Volumen"
-            className="w-28 accent-orange-500"
+            className="w-28 accent-[#f97316]"
           />
         </div>
       </div>
