@@ -37,6 +37,15 @@ type BannerFormProps = {
   initialData?: BannerFormData
   submitLabel: string
   requireImage?: boolean
+
+  /*
+   * Cuando es true:
+   * - Oculta Orden.
+   * - Oculta Estado.
+   * - La imagen es opcional.
+   * - Mantiene internamente orden 1 y estado activo.
+   */
+  esRespaldo?: boolean
 }
 
 type ColorPreset = {
@@ -123,12 +132,32 @@ const defaultData: BannerFormData = {
   colorTextoBoton: "#173f42",
 }
 
-function hexToRgba(hex: string, opacity: number) {
-  const cleanHex = hex.replace("#", "")
+function hexToRgba(
+  hex: string,
+  opacity: number
+) {
+  const fallbackHex = "#003f42"
 
-  const red = Number.parseInt(cleanHex.slice(0, 2), 16)
-  const green = Number.parseInt(cleanHex.slice(2, 4), 16)
-  const blue = Number.parseInt(cleanHex.slice(4, 6), 16)
+  const validHex = /^#[0-9a-fA-F]{6}$/.test(hex)
+    ? hex
+    : fallbackHex
+
+  const cleanHex = validHex.replace("#", "")
+
+  const red = Number.parseInt(
+    cleanHex.slice(0, 2),
+    16
+  )
+
+  const green = Number.parseInt(
+    cleanHex.slice(2, 4),
+    16
+  )
+
+  const blue = Number.parseInt(
+    cleanHex.slice(4, 6),
+    16
+  )
 
   return `rgba(${red}, ${green}, ${blue}, ${opacity})`
 }
@@ -156,29 +185,33 @@ export function BannerForm({
   initialData,
   submitLabel,
   requireImage = false,
+  esRespaldo = false,
 }: BannerFormProps) {
   const data = initialData ?? defaultData
 
-  const [subtitulo, setSubtitulo] = useState(data.subtitulo)
-  const [titulo, setTitulo] = useState(data.titulo)
-  const [descripcion, setDescripcion] = useState(
-    data.descripcion
-  )
+  const [subtitulo, setSubtitulo] =
+    useState(data.subtitulo)
 
-  const [textoBoton, setTextoBoton] = useState(
-    data.textoBoton
-  )
+  const [titulo, setTitulo] =
+    useState(data.titulo)
 
-  const [enlaceBoton, setEnlaceBoton] = useState(
-    data.enlaceBoton
-  )
+  const [descripcion, setDescripcion] =
+    useState(data.descripcion)
 
-  const [posicionImagen, setPosicionImagen] = useState(
-    data.posicionImagen
-  )
+  const [textoBoton, setTextoBoton] =
+    useState(data.textoBoton)
 
-  const [orden, setOrden] = useState(data.orden)
-  const [activo, setActivo] = useState(data.activo)
+  const [enlaceBoton, setEnlaceBoton] =
+    useState(data.enlaceBoton)
+
+  const [posicionImagen, setPosicionImagen] =
+    useState(data.posicionImagen)
+
+  const [orden, setOrden] =
+    useState(data.orden)
+
+  const [activo, setActivo] =
+    useState(data.activo)
 
   const [estiloColor, setEstiloColor] =
     useState<ColorStyle>(data.estiloColor)
@@ -198,23 +231,24 @@ export function BannerForm({
     setOpacidadGradiente,
   ] = useState(data.opacidadGradiente)
 
-  const [colorTexto, setColorTexto] = useState(
-    data.colorTexto
-  )
+  const [colorTexto, setColorTexto] =
+    useState(data.colorTexto)
 
-  const [colorBoton, setColorBoton] = useState(
-    data.colorBoton
-  )
+  const [colorBoton, setColorBoton] =
+    useState(data.colorBoton)
 
-  const [colorTextoBoton, setColorTextoBoton] =
-    useState(data.colorTextoBoton)
+  const [
+    colorTextoBoton,
+    setColorTextoBoton,
+  ] = useState(data.colorTextoBoton)
 
-  const [previewUrl, setPreviewUrl] = useState<
-    string | null
-  >(data.imageUrl)
+  const [previewUrl, setPreviewUrl] =
+    useState<string | null>(data.imageUrl)
 
-  const [imageDimensions, setImageDimensions] =
-    useState<string | null>(null)
+  const [
+    imageDimensions,
+    setImageDimensions,
+  ] = useState<string | null>(null)
 
   useEffect(() => {
     return () => {
@@ -233,9 +267,18 @@ export function BannerForm({
 
     const preset = colorPresets[style]
 
-    setColorGradienteInicio(preset.gradientStart)
-    setColorGradienteFin(preset.gradientEnd)
-    setOpacidadGradiente(preset.opacity)
+    setColorGradienteInicio(
+      preset.gradientStart
+    )
+
+    setColorGradienteFin(
+      preset.gradientEnd
+    )
+
+    setOpacidadGradiente(
+      preset.opacity
+    )
+
     setColorTexto(preset.text)
     setColorBoton(preset.button)
     setColorTextoBoton(preset.buttonText)
@@ -256,7 +299,9 @@ export function BannerForm({
       URL.revokeObjectURL(previewUrl)
     }
 
-    const objectUrl = URL.createObjectURL(file)
+    const objectUrl =
+      URL.createObjectURL(file)
+
     const image = new window.Image()
 
     image.onload = () => {
@@ -269,12 +314,14 @@ export function BannerForm({
     setPreviewUrl(objectUrl)
   }
 
-  const mainOpacity = opacidadGradiente / 100
+  const mainOpacity =
+    opacidadGradiente / 100
 
-  const secondaryOpacity = Math.max(
-    opacidadGradiente - 35,
-    10
-  ) / 100
+  const secondaryOpacity =
+    Math.max(
+      opacidadGradiente - 35,
+      10
+    ) / 100
 
   const previewGradient = `linear-gradient(
     90deg,
@@ -331,6 +378,40 @@ export function BannerForm({
         value={colorTextoBoton}
       />
 
+      {esRespaldo ? (
+        <>
+          <input
+            type="hidden"
+            name="orden"
+            value="1"
+          />
+
+          <input
+            type="hidden"
+            name="activo"
+            value="on"
+          />
+        </>
+      ) : null}
+
+      {esRespaldo ? (
+        <section className="rounded-2xl border border-[#b7d5d6] bg-[#eef7f7] p-5 sm:p-6">
+          <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#17666a]">
+            Banner institucional
+          </p>
+
+          <h2 className="mt-2 text-xl font-bold text-[#173f42]">
+            Banner de respaldo
+          </h2>
+
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#405557]">
+            Este banner aparecerá únicamente cuando el carrusel
+            principal esté activado y no existan otros banners
+            normales activos. No necesita orden ni estado individual.
+          </p>
+        </section>
+      ) : null}
+
       <section>
         <h2 className="text-xl font-bold text-[#173f42]">
           Vista previa
@@ -347,17 +428,20 @@ export function BannerForm({
             backgroundImage: previewUrl
               ? `url("${previewUrl}")`
               : undefined,
-            backgroundPosition: posicionImagen,
+
+            backgroundPosition:
+              posicionImagen,
           }}
         >
           <div
             className="absolute inset-0"
             style={{
-              background: previewGradient,
+              background:
+                previewGradient,
             }}
           />
 
-          <div className="relative flex min-h-[320px] items-center px-10 py-12">
+          <div className="relative flex min-h-[320px] items-center px-8 py-12 sm:px-10">
             <div
               className="max-w-2xl"
               style={{
@@ -371,11 +455,13 @@ export function BannerForm({
                   opacity: 0.9,
                 }}
               >
-                {subtitulo || "Subtítulo del banner"}
+                {subtitulo ||
+                  "Subtítulo del banner"}
               </p>
 
               <h3 className="mt-4 line-clamp-2 text-3xl font-bold leading-tight">
-                {titulo || "Título del banner"}
+                {titulo ||
+                  "Título del banner"}
               </h3>
 
               <p
@@ -393,8 +479,11 @@ export function BannerForm({
                 <span
                   className="mt-6 inline-flex min-h-11 items-center rounded-xl px-5 py-2 text-sm font-bold shadow-lg"
                   style={{
-                    backgroundColor: colorBoton,
-                    color: colorTextoBoton,
+                    backgroundColor:
+                      colorBoton,
+
+                    color:
+                      colorTextoBoton,
                   }}
                 >
                   {textoBoton}
@@ -429,7 +518,8 @@ export function BannerForm({
             value={estiloColor}
             onChange={(event) =>
               applyPreset(
-                event.target.value as ColorStyle
+                event.target
+                  .value as ColorStyle
               )
             }
             className="mt-2 min-h-12 w-full rounded-xl border border-[#bdc9ca] bg-white px-4 text-[#173f42] sm:max-w-md"
@@ -456,9 +546,12 @@ export function BannerForm({
           </select>
 
           <p className="mt-2 text-sm text-[#526466]">
-            {estiloColor === "personalizado"
+            {estiloColor ===
+            "personalizado"
               ? "Seleccione manualmente todos los colores."
-              : colorPresets[estiloColor].description}
+              : colorPresets[
+                  estiloColor
+                ].description}
           </p>
         </div>
 
@@ -486,7 +579,9 @@ export function BannerForm({
             value={opacidadGradiente}
             onChange={(event) =>
               setOpacidadGradiente(
-                Number(event.target.value)
+                Number(
+                  event.target.value
+                )
               )
             }
             className="mt-4 w-full accent-[#17666a]"
@@ -498,18 +593,25 @@ export function BannerForm({
           </div>
         </div>
 
-        {estiloColor === "personalizado" ? (
+        {estiloColor ===
+        "personalizado" ? (
           <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <ColorInput
               label="Inicio del gradiente"
-              value={colorGradienteInicio}
-              onChange={setColorGradienteInicio}
+              value={
+                colorGradienteInicio
+              }
+              onChange={
+                setColorGradienteInicio
+              }
             />
 
             <ColorInput
               label="Final del gradiente"
               value={colorGradienteFin}
-              onChange={setColorGradienteFin}
+              onChange={
+                setColorGradienteFin
+              }
             />
 
             <ColorInput
@@ -527,7 +629,9 @@ export function BannerForm({
             <ColorInput
               label="Texto del botón"
               value={colorTextoBoton}
-              onChange={setColorTextoBoton}
+              onChange={
+                setColorTextoBoton
+              }
             />
           </div>
         ) : null}
@@ -538,38 +642,58 @@ export function BannerForm({
           htmlFor="imagen"
           className="block text-sm font-bold text-[#173f42]"
         >
-          Imagen del banner
+          {esRespaldo
+            ? "Imagen del banner (opcional)"
+            : "Imagen del banner"}
         </label>
 
         <input
           id="imagen"
           name="imagen"
           type="file"
-          required={requireImage}
+          required={
+            requireImage &&
+            !esRespaldo
+          }
           accept="image/jpeg,image/png,image/webp"
           onChange={handleImageChange}
           className="mt-2 block w-full rounded-xl border border-dashed border-[#9eafb0] bg-[#f7f9f9] px-4 py-5 text-sm text-[#34494b] file:mr-4 file:rounded-lg file:border-0 file:bg-[#17666a] file:px-4 file:py-2 file:font-bold file:text-white hover:file:bg-[#0d5054]"
         />
 
         <div className="mt-3 rounded-xl bg-[#eef2f2] p-4 text-sm leading-6 text-[#405557]">
+          {esRespaldo ? (
+            <p className="mb-2">
+              <strong>
+                La imagen es opcional:
+              </strong>{" "}
+              si no selecciona una imagen, el banner
+              utilizará solamente el gradiente de color.
+            </p>
+          ) : null}
+
           <p>
-            <strong>Tamaño recomendado:</strong>{" "}
+            <strong>
+              Tamaño recomendado:
+            </strong>{" "}
             1600 × 600 px.
           </p>
 
           <p>
-            <strong>Tamaño mínimo recomendado:</strong>{" "}
+            <strong>
+              Tamaño mínimo recomendado:
+            </strong>{" "}
             1200 × 450 px.
           </p>
 
           <p>
-            <strong>Formatos:</strong> JPG, PNG o WEBP.
-            Máximo 5 MB.
+            <strong>Formatos:</strong>{" "}
+            JPG, PNG o WEBP. Máximo 5 MB.
           </p>
 
           {imageDimensions ? (
             <p className="mt-2 font-bold text-[#17666a]">
-              Imagen seleccionada: {imageDimensions}
+              Imagen seleccionada:{" "}
+              {imageDimensions}
             </p>
           ) : null}
         </div>
@@ -588,20 +712,28 @@ export function BannerForm({
           name="posicion_imagen"
           value={posicionImagen}
           onChange={(event) =>
-            setPosicionImagen(event.target.value)
+            setPosicionImagen(
+              event.target.value
+            )
           }
           className="mt-2 min-h-12 w-full rounded-xl border border-[#bdc9ca] bg-white px-4 text-[#173f42] sm:max-w-md"
         >
-          <option value="center center">Centro</option>
+          <option value="center center">
+            Centro
+          </option>
+
           <option value="center top">
             Parte superior
           </option>
+
           <option value="center bottom">
             Parte inferior
           </option>
+
           <option value="left center">
             Lado izquierdo
           </option>
+
           <option value="right center">
             Lado derecho
           </option>
@@ -623,7 +755,9 @@ export function BannerForm({
           maxLength={80}
           value={subtitulo}
           onChange={(event) =>
-            setSubtitulo(event.target.value)
+            setSubtitulo(
+              event.target.value
+            )
           }
           className="mt-2 min-h-12 w-full rounded-xl border border-[#bdc9ca] px-4 text-[#173f42]"
         />
@@ -645,7 +779,9 @@ export function BannerForm({
           maxLength={120}
           value={titulo}
           onChange={(event) =>
-            setTitulo(event.target.value)
+            setTitulo(
+              event.target.value
+            )
           }
           placeholder="Título principal del banner"
           className="mt-2 min-h-12 w-full rounded-xl border border-[#bdc9ca] px-4 text-[#173f42] placeholder:text-neutral-500"
@@ -667,7 +803,9 @@ export function BannerForm({
           maxLength={240}
           value={descripcion}
           onChange={(event) =>
-            setDescripcion(event.target.value)
+            setDescripcion(
+              event.target.value
+            )
           }
           placeholder="Descripción breve del contenido destacado"
           className="mt-2 w-full rounded-xl border border-[#bdc9ca] px-4 py-3 leading-7 text-[#173f42] placeholder:text-neutral-500"
@@ -688,11 +826,16 @@ export function BannerForm({
             name="texto_boton"
             type="text"
             maxLength={40}
+            required={Boolean(
+              enlaceBoton
+            )}
             value={textoBoton}
             onChange={(event) =>
-              setTextoBoton(event.target.value)
+              setTextoBoton(
+                event.target.value
+              )
             }
-            placeholder="Ejemplo: Ver programación"
+            placeholder="Ejemplo: Conocer MINIXFM"
             className="mt-2 min-h-12 w-full rounded-xl border border-[#bdc9ca] px-4 text-[#173f42]"
           />
         </div>
@@ -709,72 +852,100 @@ export function BannerForm({
             id="enlace_boton"
             name="enlace_boton"
             type="text"
+            required={Boolean(
+              textoBoton
+            )}
             value={enlaceBoton}
             onChange={(event) =>
-              setEnlaceBoton(event.target.value)
+              setEnlaceBoton(
+                event.target.value
+              )
             }
-            placeholder="/programacion"
+            placeholder="/nosotros o https://..."
             className="mt-2 min-h-12 w-full rounded-xl border border-[#bdc9ca] px-4 text-[#173f42]"
           />
         </div>
+
+        <p className="text-sm leading-6 text-[#526466] sm:col-span-2">
+          El botón es opcional. Para mostrarlo debe
+          completar tanto el texto como el enlace. Puede
+          usar una ruta interna o una URL externa completa.
+        </p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div>
-          <label
-            htmlFor="orden"
-            className="block text-sm font-bold text-[#173f42]"
-          >
-            Orden de aparición
-          </label>
+      {!esRespaldo ? (
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div>
+            <label
+              htmlFor="orden"
+              className="block text-sm font-bold text-[#173f42]"
+            >
+              Orden de aparición
+            </label>
 
-          <input
-            id="orden"
-            name="orden"
-            type="number"
-            min={1}
-            step={1}
-            required
-            value={orden}
-            onChange={(event) =>
-              setOrden(Number(event.target.value))
-            }
-            className="mt-2 min-h-12 w-full rounded-xl border border-[#bdc9ca] px-4 text-[#173f42]"
-          />
-        </div>
-
-        <div>
-          <p className="block text-sm font-bold text-[#173f42]">
-            Estado
-          </p>
-
-          <label className="mt-3 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-[#bdc9ca] px-4">
             <input
-              name="activo"
-              type="checkbox"
-              checked={activo}
+              id="orden"
+              name="orden"
+              type="number"
+              min={1}
+              step={1}
+              required
+              value={orden}
               onChange={(event) =>
-                setActivo(event.target.checked)
+                setOrden(
+                  Number(
+                    event.target.value
+                  )
+                )
               }
-              className="h-5 w-5 accent-[#17666a]"
+              className="mt-2 min-h-12 w-full rounded-xl border border-[#bdc9ca] px-4 text-[#173f42]"
             />
+          </div>
 
-            <span className="font-semibold text-[#34494b]">
-              Banner activo
-            </span>
-          </label>
+          <div>
+            <p className="block text-sm font-bold text-[#173f42]">
+              Estado
+            </p>
+
+            <label className="mt-3 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-[#bdc9ca] px-4">
+              <input
+                name="activo"
+                type="checkbox"
+                checked={activo}
+                onChange={(event) =>
+                  setActivo(
+                    event.target.checked
+                  )
+                }
+                className="h-5 w-5 accent-[#17666a]"
+              />
+
+              <span className="font-semibold text-[#34494b]">
+                Banner activo
+              </span>
+            </label>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-xl border border-[#d5dddd] bg-[#f7f9f9] p-4 text-sm leading-6 text-[#405557]">
+          El banner de respaldo no utiliza un orden de
+          aparición ni un estado individual. Se mostrará
+          automáticamente cuando el carrusel esté habilitado
+          y no existan banners normales activos.
+        </div>
+      )}
 
       <div className="flex flex-col-reverse gap-3 border-t border-[#d5dddd] pt-6 sm:flex-row sm:justify-end">
         <Link
           href="/admin/banners"
-          className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[#bdc9ca] px-6 py-3 text-sm font-bold text-[#34494b] hover:bg-[#eef1f1]"
+          className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[#bdc9ca] px-6 py-3 text-sm font-bold text-[#34494b] transition hover:bg-[#eef1f1]"
         >
           Cancelar
         </Link>
 
-        <SubmitButton label={submitLabel} />
+        <SubmitButton
+          label={submitLabel}
+        />
       </div>
     </form>
   )
@@ -802,7 +973,9 @@ function ColorInput({
           type="color"
           value={value}
           onChange={(event) =>
-            onChange(event.target.value)
+            onChange(
+              event.target.value
+            )
           }
           className="h-8 w-10 cursor-pointer border-0 bg-transparent p-0"
         />
@@ -811,7 +984,9 @@ function ColorInput({
           type="text"
           value={value}
           onChange={(event) =>
-            onChange(event.target.value)
+            onChange(
+              event.target.value
+            )
           }
           maxLength={7}
           className="min-w-0 flex-1 bg-transparent font-mono text-sm uppercase text-[#34494b] outline-none"

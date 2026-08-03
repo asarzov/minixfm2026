@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
+
 import { createClient } from "@/lib/supabase/server"
+
 import { logout } from "./actions"
 
 export default async function AdminLayout({
@@ -9,6 +11,7 @@ export default async function AdminLayout({
   children: React.ReactNode
 }>) {
   const supabase = await createClient()
+
   const { data } = await supabase.auth.getClaims()
 
   if (!data?.claims) {
@@ -17,8 +20,8 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-neutral-100">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <header className="border-b border-neutral-200 bg-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-orange-600">
               Administración
@@ -29,10 +32,10 @@ export default async function AdminLayout({
             </h1>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <Link
               href="/"
-              className="text-sm text-neutral-600 hover:text-neutral-950"
+              className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-950"
             >
               Ver sitio público
             </Link>
@@ -50,39 +53,55 @@ export default async function AdminLayout({
       </header>
 
       <div className="mx-auto grid max-w-7xl gap-8 px-6 py-8 md:grid-cols-[220px_1fr]">
-        <aside className="rounded-xl border bg-white p-4">
-          <nav className="space-y-2 text-sm">
+        <aside className="h-fit rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+          <div className="mb-4 border-b border-neutral-200 pb-3">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-500">
+              Menú principal
+            </p>
+          </div>
+
+          <nav
+            aria-label="Navegación del panel administrativo"
+            className="space-y-2 text-sm"
+          >
             <Link
               href="/admin"
-              className="block rounded-md px-3 py-2 text-neutral-700 hover:bg-neutral-100"
+              className="block rounded-md px-3 py-2 font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
             >
               Resumen
             </Link>
 
             <Link
               href="/admin/noticias"
-              className="block rounded-md px-3 py-2 text-neutral-700 hover:bg-neutral-100"
+              className="block rounded-md px-3 py-2 font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
             >
               Noticias
             </Link>
 
             <Link
+              href="/admin/banners"
+              className="block rounded-md px-3 py-2 font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+            >
+              Banners
+            </Link>
+
+            <Link
               href="/admin/programacion"
-              className="block rounded-md px-3 py-2 text-neutral-700 hover:bg-neutral-100"
+              className="block rounded-md px-3 py-2 font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
             >
               Programación
             </Link>
 
             <Link
               href="/admin/talleres"
-              className="block rounded-md px-3 py-2 text-neutral-700 hover:bg-neutral-100"
+              className="block rounded-md px-3 py-2 font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
             >
               Talleres
             </Link>
           </nav>
         </aside>
 
-        <main>{children}</main>
+        <main className="min-w-0">{children}</main>
       </div>
     </div>
   )

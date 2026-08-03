@@ -4,8 +4,8 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
-type Slide = {
-  id: number
+export type BannerSlide = {
+  id: string
   eyebrow: string
   title: string
   description: string
@@ -14,81 +14,164 @@ type Slide = {
   imageUrl: string | null
   imageAlt: string
   imagePosition: string
-  fallbackBackground: string
+  colorGradientStart: string
+  colorGradientEnd: string
+  gradientOpacity: number
+  textColor: string
+  buttonColor: string
+  buttonTextColor: string
 }
 
-const slides: Slide[] = [
+type HomeBannerCarouselProps = {
+  slides: BannerSlide[]
+}
+
+const fallbackSlides: BannerSlide[] = [
   {
-    id: 1,
+    id: "fallback-minixfm",
     eyebrow: "MINIXFM Fundación",
     title: "Escucha la voz de nuestra comunidad",
     description:
       "Cultura, educación, música, patrimonio y participación desde la Región de Coquimbo.",
-    href: "/programacion",
-    action: "Ver programación",
-    imageUrl: null,
-    imageAlt:
-      "Radio comunitaria MINIXFM conectada con las comunidades del territorio",
-    imagePosition: "center center",
-    fallbackBackground:
-      "bg-gradient-to-r from-[#003f42] via-[#17666a] to-[#299c96]",
-  },
-  {
-    id: 2,
-    eyebrow: "Punto de Cultura Comunitaria",
-    title: "Talleres para aprender, crear y encontrarnos",
-    description:
-      "Conozca nuestros espacios de formación artística, cultural y comunitaria.",
-    href: "/talleres",
-    action: "Conocer talleres",
-    imageUrl: null,
-    imageAlt:
-      "Actividades culturales y talleres comunitarios de MINIXFM",
-    imagePosition: "center center",
-    fallbackBackground:
-      "bg-gradient-to-r from-[#7547d8] via-[#3f75be] to-[#079f9d]",
-  },
-  {
-    id: 3,
-    eyebrow: "Comunicación comunitaria",
-    title: "Historias y expresiones que nacen desde el territorio",
-    description:
-      "Difundimos iniciativas, testimonios y contenidos que fortalecen nuestra identidad.",
     href: "/nosotros",
     action: "Conocer MINIXFM",
     imageUrl: null,
-    imageAlt:
-      "Historias y expresiones culturales de la Región de Coquimbo",
+    imageAlt: "",
     imagePosition: "center center",
-    fallbackBackground:
-      "bg-gradient-to-r from-[#d85f0b] via-[#f97316] to-[#d9a319]",
+    colorGradientStart: "#001f21",
+    colorGradientEnd: "#17666a",
+    gradientOpacity: 95,
+    textColor: "#ffffff",
+    buttonColor: "#ffffff",
+    buttonTextColor: "#173f42",
   },
 ]
 
-export function HomeBannerCarousel() {
+function clampOpacity(value: number) {
+  return Math.min(Math.max(value, 0), 100)
+}
+
+function hexToRgba(
+  hex: string,
+  opacity: number
+) {
+  const fallbackHex = "#003f42"
+
+  const validHex = /^#[0-9a-fA-F]{6}$/.test(hex)
+    ? hex
+    : fallbackHex
+
+  const cleanHex = validHex.replace("#", "")
+
+  const red = Number.parseInt(cleanHex.slice(0, 2), 16)
+  const green = Number.parseInt(cleanHex.slice(2, 4), 16)
+  const blue = Number.parseInt(cleanHex.slice(4, 6), 16)
+
+  return `rgba(${red}, ${green}, ${blue}, ${opacity})`
+}
+
+function BannerButton({
+  href,
+  label,
+  isActive,
+  backgroundColor,
+  textColor,
+}: {
+  href: string
+  label: string
+  isActive: boolean
+  backgroundColor: string
+  textColor: string
+}) {
+  if (!href || !label) {
+    return null
+  }
+
+  const buttonClassName =
+    "mt-8 inline-flex min-h-12 items-center justify-center rounded-xl px-6 py-3 text-sm font-bold shadow-lg transition duration-300 hover:-translate-y-0.5 hover:shadow-xl"
+
+  const buttonStyle = {
+    backgroundColor,
+    color: textColor,
+  }
+
+  const isExternal =
+    href.startsWith("https://") ||
+    href.startsWith("http://")
+
+  if (isExternal) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        tabIndex={isActive ? 0 : -1}
+        className={buttonClassName}
+        style={buttonStyle}
+      >
+        {label}
+      </a>
+    )
+  }
+
+  return (
+    <Link
+      href={href}
+      tabIndex={isActive ? 0 : -1}
+      className={buttonClassName}
+      style={buttonStyle}
+    >
+      {label}
+    </Link>
+  )
+}
+
+export function HomeBannerCarousel({
+  slides,
+}: HomeBannerCarouselProps) {
+  const carouselSlides =
+    slides.length > 0 ? slides : fallbackSlides
+
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
 
   useEffect(() => {
-    if (isPaused) {
+    if (
+      isPaused ||
+      carouselSlides.length <= 1
+    ) {
       return
     }
 
     const interval = window.setInterval(() => {
-      setCurrentSlide((current) => (current + 1) % slides.length)
+      setCurrentSlide(
+        (current) =>
+          (current + 1) % carouselSlides.length
+      )
     }, 6000)
 
     return () => window.clearInterval(interval)
-  }, [isPaused])
+  }, [isPaused, carouselSlides.length])
+
+  useEffect(() => {
+    if (currentSlide >= carouselSlides.length) {
+      setCurrentSlide(0)
+    }
+  }, [currentSlide, carouselSlides.length])
 
   function showPreviousSlide() {
     setCurrentSlide((current) =>
-      current === 0 ? slides.length - 1 : current - 1
+      current === 0
+        ? carouselSlides.length - 1
+        : current - 1
     )
   }
 
   function showNextSlide() {
-    setCurrentSlide((current) => (current + 1) % slides.length)
+    setCurrentSlide(
+      (current) =>
+        (current + 1) % carouselSlides.length
+    )
   }
 
   return (
@@ -101,112 +184,162 @@ export function HomeBannerCarousel() {
       onFocus={() => setIsPaused(true)}
       onBlur={() => setIsPaused(false)}
     >
-      {slides.map((slide, index) => {
+      {carouselSlides.map((slide, index) => {
         const isActive = index === currentSlide
+
+        const mainOpacity =
+          clampOpacity(slide.gradientOpacity) / 100
+
+        const finalOpacity =
+          Math.max(
+            clampOpacity(slide.gradientOpacity) - 35,
+            10
+          ) / 100
+
+        const gradient = `linear-gradient(
+          90deg,
+          ${hexToRgba(
+            slide.colorGradientStart,
+            mainOpacity
+          )} 0%,
+          ${hexToRgba(
+            slide.colorGradientEnd,
+            finalOpacity
+          )} 100%
+        )`
 
         return (
           <div
             key={slide.id}
             aria-hidden={!isActive}
-            className={`absolute inset-0 transition-all duration-1000 ease-in-out motion-reduce:transition-none ${
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out motion-reduce:transition-none ${
               isActive
                 ? "pointer-events-auto z-10 opacity-100"
                 : "pointer-events-none z-0 opacity-0"
-            } ${slide.fallbackBackground}`}
+            }`}
           >
             {slide.imageUrl ? (
               <Image
                 src={slide.imageUrl}
                 alt={slide.imageAlt}
                 fill
-                priority={index === 0}
+                preload={index === 0}
                 sizes="(max-width: 768px) 100vw, 1280px"
                 style={{
                   objectPosition: slide.imagePosition,
                 }}
                 className={`object-cover transition-transform duration-[6000ms] ease-out motion-reduce:transition-none ${
-                  isActive ? "scale-105" : "scale-100"
+                  isActive
+                    ? "scale-105"
+                    : "scale-100"
                 }`}
               />
             ) : null}
 
             <div
               aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-r from-[#001f21]/95 via-[#003f42]/80 to-[#003f42]/20"
+              className="absolute inset-0"
+              style={{
+                background: gradient,
+              }}
             />
 
             <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-black/10 sm:bg-transparent"
-            />
-
-            <div className="relative flex h-full items-center px-8 py-14 sm:px-16 lg:px-20">
+              className="relative flex h-full items-center px-8 py-14 sm:px-16 lg:px-20"
+            >
               <div
-                className={`max-w-3xl text-white transition-all delay-150 duration-700 ease-out motion-reduce:transition-none ${
+                className={`max-w-3xl transition-all delay-150 duration-700 ease-out motion-reduce:transition-none ${
                   isActive
                     ? "translate-y-0 opacity-100"
                     : "translate-y-5 opacity-0"
                 }`}
+                style={{
+                  color: slide.textColor,
+                }}
               >
-                <p className="text-sm font-bold uppercase tracking-[0.22em] text-white/90">
-                  {slide.eyebrow}
-                </p>
+                {slide.eyebrow ? (
+                  <p
+                    className="text-sm font-bold uppercase tracking-[0.22em]"
+                    style={{
+                      color: slide.textColor,
+                      opacity: 0.9,
+                    }}
+                  >
+                    {slide.eyebrow}
+                  </p>
+                ) : null}
 
-                <h1 className="mt-5 line-clamp-2 text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+                <h1 className="mt-5 line-clamp-2 text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
                   {slide.title}
                 </h1>
 
-                <p className="mt-5 line-clamp-3 max-w-2xl text-base leading-7 text-white/90 sm:text-lg sm:leading-8">
-                  {slide.description}
-                </p>
+                {slide.description ? (
+                  <p
+                    className="mt-5 line-clamp-3 max-w-2xl text-base leading-7 sm:text-lg sm:leading-8"
+                    style={{
+                      color: slide.textColor,
+                      opacity: 0.9,
+                    }}
+                  >
+                    {slide.description}
+                  </p>
+                ) : null}
 
-                <Link
+                <BannerButton
                   href={slide.href}
-                  tabIndex={isActive ? 0 : -1}
-                  className="mt-8 inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-bold text-[#173f42] shadow-lg transition duration-300 hover:-translate-y-0.5 hover:bg-[#f1f3f3] hover:shadow-xl"
-                >
-                  {slide.action}
-                </Link>
+                  label={slide.action}
+                  isActive={isActive}
+                  backgroundColor={slide.buttonColor}
+                  textColor={slide.buttonTextColor}
+                />
               </div>
             </div>
           </div>
         )
       })}
 
-      <button
-        type="button"
-        onClick={showPreviousSlide}
-        aria-label="Mostrar banner anterior"
-        className="absolute left-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/30 text-3xl text-white backdrop-blur transition duration-300 hover:scale-105 hover:bg-black/50 sm:left-5"
-      >
-        ‹
-      </button>
-
-      <button
-        type="button"
-        onClick={showNextSlide}
-        aria-label="Mostrar banner siguiente"
-        className="absolute right-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/30 text-3xl text-white backdrop-blur transition duration-300 hover:scale-105 hover:bg-black/50 sm:right-5"
-      >
-        ›
-      </button>
-
-      <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/20 px-3 py-2 backdrop-blur">
-        {slides.map((slide, index) => (
+      {carouselSlides.length > 1 ? (
+        <>
           <button
-            key={slide.id}
             type="button"
-            onClick={() => setCurrentSlide(index)}
-            aria-label={`Mostrar banner ${index + 1}`}
-            aria-current={index === currentSlide ? "true" : undefined}
-            className={`h-2.5 rounded-full transition-all duration-500 ${
-              index === currentSlide
-                ? "w-8 bg-white"
-                : "w-2.5 bg-white/50 hover:bg-white/80"
-            }`}
-          />
-        ))}
-      </div>
+            onClick={showPreviousSlide}
+            aria-label="Mostrar banner anterior"
+            className="absolute left-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/30 text-3xl text-white backdrop-blur transition duration-300 hover:scale-105 hover:bg-black/50 sm:left-5"
+          >
+            ‹
+          </button>
+
+          <button
+            type="button"
+            onClick={showNextSlide}
+            aria-label="Mostrar banner siguiente"
+            className="absolute right-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/30 text-3xl text-white backdrop-blur transition duration-300 hover:scale-105 hover:bg-black/50 sm:right-5"
+          >
+            ›
+          </button>
+
+          <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/25 px-3 py-2 backdrop-blur">
+            {carouselSlides.map((slide, index) => (
+              <button
+                key={slide.id}
+                type="button"
+                onClick={() => setCurrentSlide(index)}
+                aria-label={`Mostrar banner ${index + 1}`}
+                aria-current={
+                  index === currentSlide
+                    ? "true"
+                    : undefined
+                }
+                className={`h-2.5 rounded-full transition-all duration-500 ${
+                  index === currentSlide
+                    ? "w-8 bg-white"
+                    : "w-2.5 bg-white/50 hover:bg-white/80"
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      ) : null}
     </section>
   )
 }

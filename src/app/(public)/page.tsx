@@ -1,7 +1,10 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 
-import { HomeBannerCarousel } from "@/components/public/home-banner-carousel"
+import {
+  HomeBannerCarousel,
+  type BannerSlide,
+} from "@/components/public/home-banner-carousel"
 import { NewsCard } from "@/components/public/news-card"
 import { createClient } from "@/lib/supabase/server"
 
@@ -12,6 +15,24 @@ export const metadata: Metadata = {
 }
 
 export const dynamic = "force-dynamic"
+
+type BannerRow = {
+  id: string
+  subtitulo: string
+  titulo: string
+  descripcion: string
+  imagen_principal: string
+  texto_boton: string
+  enlace_boton: string
+  posicion_imagen: string
+  orden: number
+  color_gradiente_inicio: string
+  color_gradiente_fin: string
+  opacidad_gradiente: number
+  color_texto: string
+  color_boton: string
+  color_texto_boton: string
+}
 
 type Noticia = {
   id: string
@@ -26,7 +47,105 @@ type Noticia = {
 export default async function HomePage() {
   const supabase = await createClient()
 
-  const { data } = await supabase
+  /*
+   * Configuración general de la portada.
+   *
+   * Cuando mostrar_banners sea false, el carrusel completo
+   * quedará oculto, aunque existan banners activos.
+   *
+   * Cuando sea true, el carrusel aparecerá. Si no existen
+   * banners activos, HomeBannerCarousel mostrará el banner
+   * institucional de respaldo.
+   */
+  const { data: siteConfig } = await supabase
+    .from("configuracion_sitio")
+    .select("mostrar_banners")
+    .eq("id", "principal")
+    .maybeSingle()
+
+  /*
+   * Solamente se recuperan los banners individuales
+   * que estén marcados como activos.
+   */
+  const { data: bannerData } = await supabase
+    .from("banners")
+    .select(`
+      id,
+      subtitulo,
+      titulo,
+      descripcion,
+      imagen_principal,
+      texto_boton,
+      enlace_boton,
+      posicion_imagen,
+      orden,
+      color_gradiente_inicio,
+      color_gradiente_fin,
+      opacidad_gradiente,
+      color_texto,
+      color_boton,
+      color_texto_boton
+    `)
+    .eq("activo", true)
+    .order("orden", {
+      ascending: true,
+    })
+    .order("created_at", {
+      ascending: true,
+    })
+
+  const banners = ((bannerData ?? []) as BannerRow[]).map(
+    (banner): BannerSlide => ({
+      id: banner.id,
+
+      eyebrow:
+        banner.subtitulo || "MINIXFM Fundación",
+
+      title: banner.titulo,
+
+      description: banner.descripcion,
+
+      href: banner.enlace_boton,
+
+      action: banner.texto_boton,
+
+      imageUrl: banner.imagen_principal,
+
+      imageAlt: `Imagen del banner: ${banner.titulo}`,
+
+      imagePosition:
+        banner.posicion_imagen || "center center",
+
+      colorGradientStart:
+        banner.color_gradiente_inicio || "#001f21",
+
+      colorGradientEnd:
+        banner.color_gradiente_fin || "#003f42",
+
+      gradientOpacity:
+        banner.opacidad_gradiente ?? 90,
+
+      textColor:
+        banner.color_texto || "#ffffff",
+
+      buttonColor:
+        banner.color_boton || "#ffffff",
+
+      buttonTextColor:
+        banner.color_texto_boton || "#173f42",
+    })
+  )
+
+  /*
+   * El carrusel depende solamente de la configuración global.
+   *
+   * Si está activado y no hay banners individuales activos,
+   * el componente mostrará el banner institucional de respaldo.
+   */
+  const mostrarCarrusel =
+    siteConfig?.mostrar_banners ?? true
+
+  const { data: newsData } = await supabase
     .from("noticias")
     .select(
       "id, titulo, slug, bajada, categoria, imagen_principal, fecha_publicacion"
@@ -37,17 +156,25 @@ export default async function HomePage() {
     })
     .limit(3)
 
-  const noticias = (data ?? []) as Noticia[]
+  const noticias = (newsData ?? []) as Noticia[]
 
   return (
     <main>
-      <section className="px-4 py-5 sm:px-6 sm:py-7">
-        <div className="mx-auto max-w-7xl">
-          <HomeBannerCarousel />
-        </div>
-      </section>
+      {mostrarCarrusel ? (
+        <section className="px-4 py-5 sm:px-6 sm:py-7">
+          <div className="mx-auto max-w-7xl">
+            <HomeBannerCarousel slides={banners} />
+          </div>
+        </section>
+      ) : null}
 
-      <section className="px-4 pb-20 pt-10 sm:px-6">
+      <section
+        className={`px-4 pb-20 sm:px-6 ${
+          mostrarCarrusel
+            ? "pt-10"
+            : "pt-12 sm:pt-16"
+        }`}
+      >
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -67,7 +194,7 @@ export default async function HomePage() {
 
             <Link
               href="/noticias"
-              className="font-bold text-[#17666a] hover:text-[#f97316]"
+              className="font-bold text-[#17666a] transition hover:text-[#f97316]"
             >
               Ver todas las noticias →
             </Link>
@@ -123,7 +250,7 @@ export default async function HomePage() {
 
             <Link
               href="/nosotros"
-              className="mt-7 inline-flex font-bold text-[#17666a] hover:text-[#f97316]"
+              className="mt-7 inline-flex font-bold text-[#17666a] transition hover:text-[#f97316]"
             >
               Conozca nuestra organización →
             </Link>
