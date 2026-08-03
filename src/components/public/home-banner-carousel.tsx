@@ -26,10 +26,7 @@ const slides: Slide[] = [
       "Cultura, educación, música, patrimonio y participación desde la Región de Coquimbo.",
     href: "/programacion",
     action: "Ver programación",
-
-    // Más adelante aquí llegará la URL desde Supabase.
     imageUrl: null,
-
     imageAlt:
       "Radio comunitaria MINIXFM conectada con las comunidades del territorio",
     imagePosition: "center center",
@@ -44,9 +41,7 @@ const slides: Slide[] = [
       "Conozca nuestros espacios de formación artística, cultural y comunitaria.",
     href: "/talleres",
     action: "Conocer talleres",
-
     imageUrl: null,
-
     imageAlt:
       "Actividades culturales y talleres comunitarios de MINIXFM",
     imagePosition: "center center",
@@ -61,9 +56,7 @@ const slides: Slide[] = [
       "Difundimos iniciativas, testimonios y contenidos que fortalecen nuestra identidad.",
     href: "/nosotros",
     action: "Conocer MINIXFM",
-
     imageUrl: null,
-
     imageAlt:
       "Historias y expresiones culturales de la Región de Coquimbo",
     imagePosition: "center center",
@@ -74,14 +67,19 @@ const slides: Slide[] = [
 
 export function HomeBannerCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
 
   useEffect(() => {
+    if (isPaused) {
+      return
+    }
+
     const interval = window.setInterval(() => {
       setCurrentSlide((current) => (current + 1) % slides.length)
     }, 6000)
 
     return () => window.clearInterval(interval)
-  }, [])
+  }, [isPaused])
 
   function showPreviousSlide() {
     setCurrentSlide((current) =>
@@ -93,72 +91,93 @@ export function HomeBannerCarousel() {
     setCurrentSlide((current) => (current + 1) % slides.length)
   }
 
-  const slide = slides[currentSlide]
-
   return (
     <section
-      className={`relative h-[520px] overflow-hidden rounded-2xl sm:h-[480px] lg:h-[440px] ${slide.fallbackBackground}`}
+      className="relative h-[520px] overflow-hidden rounded-2xl bg-[#003f42] sm:h-[480px] lg:h-[440px]"
       aria-label="Contenido destacado de MINIXFM"
       aria-roledescription="carrusel"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocus={() => setIsPaused(true)}
+      onBlur={() => setIsPaused(false)}
     >
-      {slide.imageUrl ? (
-        <Image
-          key={slide.imageUrl}
-          src={slide.imageUrl}
-          alt={slide.imageAlt}
-          fill
-          priority={currentSlide === 0}
-          sizes="(max-width: 768px) 100vw, 1280px"
-          style={{
-            objectPosition: slide.imagePosition,
-          }}
-          className="object-cover"
-        />
-      ) : null}
+      {slides.map((slide, index) => {
+        const isActive = index === currentSlide
 
-      {/* Gradiente que mejora la lectura del texto */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-r from-[#001f21]/95 via-[#003f42]/80 to-[#003f42]/20"
-      />
-
-      {/* Oscurecimiento adicional para dispositivos móviles */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-black/10 sm:bg-transparent"
-      />
-
-      <div className="relative flex h-full items-center px-8 py-14 sm:px-16 lg:px-20">
-        <div
-          className="max-w-3xl text-white"
-          aria-live="polite"
-        >
-          <p className="text-sm font-bold uppercase tracking-[0.22em] text-white/90">
-            {slide.eyebrow}
-          </p>
-
-          <h1 className="mt-5 line-clamp-2 text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
-            {slide.title}
-          </h1>
-
-          <p className="mt-5 line-clamp-3 max-w-2xl text-base leading-7 text-white/90 sm:text-lg sm:leading-8">
-            {slide.description}
-          </p>
-
-          <Link
-            href={slide.href}
-            className="mt-8 inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-bold text-[#173f42] shadow-lg transition hover:bg-[#f1f3f3]"
+        return (
+          <div
+            key={slide.id}
+            aria-hidden={!isActive}
+            className={`absolute inset-0 transition-all duration-1000 ease-in-out motion-reduce:transition-none ${
+              isActive
+                ? "pointer-events-auto z-10 opacity-100"
+                : "pointer-events-none z-0 opacity-0"
+            } ${slide.fallbackBackground}`}
           >
-            {slide.action}
-          </Link>
-        </div>
-      </div>
+            {slide.imageUrl ? (
+              <Image
+                src={slide.imageUrl}
+                alt={slide.imageAlt}
+                fill
+                priority={index === 0}
+                sizes="(max-width: 768px) 100vw, 1280px"
+                style={{
+                  objectPosition: slide.imagePosition,
+                }}
+                className={`object-cover transition-transform duration-[6000ms] ease-out motion-reduce:transition-none ${
+                  isActive ? "scale-105" : "scale-100"
+                }`}
+              />
+            ) : null}
+
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-r from-[#001f21]/95 via-[#003f42]/80 to-[#003f42]/20"
+            />
+
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-black/10 sm:bg-transparent"
+            />
+
+            <div className="relative flex h-full items-center px-8 py-14 sm:px-16 lg:px-20">
+              <div
+                className={`max-w-3xl text-white transition-all delay-150 duration-700 ease-out motion-reduce:transition-none ${
+                  isActive
+                    ? "translate-y-0 opacity-100"
+                    : "translate-y-5 opacity-0"
+                }`}
+              >
+                <p className="text-sm font-bold uppercase tracking-[0.22em] text-white/90">
+                  {slide.eyebrow}
+                </p>
+
+                <h1 className="mt-5 line-clamp-2 text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+                  {slide.title}
+                </h1>
+
+                <p className="mt-5 line-clamp-3 max-w-2xl text-base leading-7 text-white/90 sm:text-lg sm:leading-8">
+                  {slide.description}
+                </p>
+
+                <Link
+                  href={slide.href}
+                  tabIndex={isActive ? 0 : -1}
+                  className="mt-8 inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-bold text-[#173f42] shadow-lg transition duration-300 hover:-translate-y-0.5 hover:bg-[#f1f3f3] hover:shadow-xl"
+                >
+                  {slide.action}
+                </Link>
+              </div>
+            </div>
+          </div>
+        )
+      })}
 
       <button
         type="button"
         onClick={showPreviousSlide}
         aria-label="Mostrar banner anterior"
-        className="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/30 text-3xl text-white backdrop-blur transition hover:bg-black/50 sm:left-5"
+        className="absolute left-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/30 text-3xl text-white backdrop-blur transition duration-300 hover:scale-105 hover:bg-black/50 sm:left-5"
       >
         ‹
       </button>
@@ -167,20 +186,20 @@ export function HomeBannerCarousel() {
         type="button"
         onClick={showNextSlide}
         aria-label="Mostrar banner siguiente"
-        className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/30 text-3xl text-white backdrop-blur transition hover:bg-black/50 sm:right-5"
+        className="absolute right-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/30 text-3xl text-white backdrop-blur transition duration-300 hover:scale-105 hover:bg-black/50 sm:right-5"
       >
         ›
       </button>
 
-      <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/20 px-3 py-2 backdrop-blur">
-        {slides.map((item, index) => (
+      <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/20 px-3 py-2 backdrop-blur">
+        {slides.map((slide, index) => (
           <button
-            key={item.id}
+            key={slide.id}
             type="button"
             onClick={() => setCurrentSlide(index)}
             aria-label={`Mostrar banner ${index + 1}`}
-            aria-current={index === currentSlide}
-            className={`h-2.5 rounded-full transition-all ${
+            aria-current={index === currentSlide ? "true" : undefined}
+            className={`h-2.5 rounded-full transition-all duration-500 ${
               index === currentSlide
                 ? "w-8 bg-white"
                 : "w-2.5 bg-white/50 hover:bg-white/80"
